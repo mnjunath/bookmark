@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Smart Bookmark App
 
 A modern, feature-rich bookmark management application built with Next.js 15, Supabase, and Framer Motion. Save, organize, and access your favorite websites with real-time synchronization and beautiful animations.
@@ -246,3 +247,6 @@ For questions or feedback, please open an issue on GitHub.
 ---
 
 **Built with love using Next.js and Supabase**
+=======
+# bookmark
+>>>>>>> eda24dbd079b786e71af5d7283d46a35bf425d35
