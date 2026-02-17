@@ -4,8 +4,9 @@ import { signInWithGoogle } from '../auth/actions'
 import { LogIn } from 'lucide-react'
 import { motion, Variants } from 'framer-motion'
 import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function Login() {
+function LoginContent() {
     const searchParams = useSearchParams()
     const message = searchParams.get('message')
     console.log('Connecting to Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
@@ -239,5 +240,17 @@ export default function Login() {
                 </motion.div>
             </motion.div>
         </motion.div >
+    )
+}
+
+export default function Login() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     )
 }
