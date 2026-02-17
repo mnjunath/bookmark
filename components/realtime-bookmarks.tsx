@@ -15,11 +15,12 @@ type BookmarkItem = {
 
 const CATEGORIES = ['All', 'General', 'Work', 'Personal', 'Learning', 'Tools']
 
+const supabase = createClient()
+
 export default function RealtimeBookmarks({ serverBookmarks }: { serverBookmarks: BookmarkItem[] }) {
     const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(serverBookmarks)
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('All')
-    const supabase = createClient()
 
     useEffect(() => {
         setBookmarks(serverBookmarks)
