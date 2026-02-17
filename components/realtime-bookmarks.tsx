@@ -27,34 +27,58 @@ export default function RealtimeBookmarks({ serverBookmarks }: { serverBookmarks
     }, [serverBookmarks])
 
     useEffect(() => {
-        console.log('Setting up real-time subscription...')
-        const channel = supabase
-            .channel('realtime bookmarks')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'bookmarks',
-                },
-                (payload) => {
-                    console.log('Real-time payload received:', payload)
-                    if (payload.eventType === 'INSERT') {
-                        setBookmarks((prev) => [...prev, payload.new as BookmarkItem])
-                    } else if (payload.eventType === 'DELETE') {
-                        setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== payload.old.id))
+        let retryTimeout: NodeJS.Timeout
+        let retryCount = 0
+
+        const subscribe = () => {
+            console.log(`Setting up real-time subscription (Attempt ${retryCount + 1})...`)
+
+            // Use a unique channel for each subscription attempt
+            const channel = supabase
+                .channel(`realtime-bookmarks-${Date.now()}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'bookmarks',
+                    },
+                    (payload) => {
+                        console.log('Real-time payload received:', payload)
+                        if (payload.eventType === 'INSERT') {
+                            setBookmarks((prev) => [...prev, payload.new as BookmarkItem])
+                        } else if (payload.eventType === 'DELETE') {
+                            setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== payload.old.id))
+                        }
                     }
-                }
-            )
-            .subscribe((status) => {
-                console.log('Real-time subscription status:', status)
-            })
+                )
+                .subscribe((status) => {
+                    console.log('Real-time subscription status:', status)
+
+                    if (status === 'TIMED_OUT' || status === 'CLOSED') {
+                        const delay = Math.min(1000 * Math.pow(2, retryCount), 10000)
+                        console.log(`Connection failed. Retrying in ${delay}ms...`)
+                        retryCount++
+                        retryTimeout = setTimeout(() => {
+                            supabase.removeChannel(channel)
+                            subscribe()
+                        }, delay)
+                    } else if (status === 'SUBSCRIBED') {
+                        retryCount = 0 // Reset on success
+                    }
+                })
+
+            return channel
+        }
+
+        const channel = subscribe()
 
         return () => {
             console.log('Cleaning up real-time subscription')
+            clearTimeout(retryTimeout)
             supabase.removeChannel(channel)
         }
-    }, [supabase])
+    }, [])
 
     const handleDelete = async (id: string) => {
         setBookmarks((prev) => prev.filter((b) => b.id !== id))
