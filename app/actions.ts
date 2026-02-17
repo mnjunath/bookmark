@@ -26,7 +26,7 @@ export async function addBookmark(formData: FormData) {
 
     if (error) {
         console.error('Error adding bookmark:', error)
-        return { error: 'Failed to add bookmark' }
+        return { error: `Database error: ${error.message} (${error.code})` }
     }
 
     revalidatePath('/')
