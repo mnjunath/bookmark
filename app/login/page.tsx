@@ -2,7 +2,7 @@
 
 import { signInWithGoogle } from '../auth/actions'
 import { LogIn } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import { useSearchParams } from 'next/navigation'
 
 export default function Login() {
@@ -10,7 +10,7 @@ export default function Login() {
     const message = searchParams.get('message')
     console.log('Connecting to Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
 
-    const containerVariants = {
+    const containerVariants: Variants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
@@ -21,7 +21,7 @@ export default function Login() {
         }
     }
 
-    const itemVariants = {
+    const itemVariants: Variants = {
         hidden: { opacity: 0, x: -30 },
         visible: {
             opacity: 1,
@@ -34,7 +34,7 @@ export default function Login() {
         }
     }
 
-    const floatVariants = {
+    const floatVariants: Variants = {
         animate: {
             y: [0, -10, 0],
             transition: {

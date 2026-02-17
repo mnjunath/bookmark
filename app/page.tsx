@@ -52,7 +52,7 @@ export default function Home() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
+      transition={{ duration: 0.5, ease: "easeInOut" as const }}
       className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50"
     >
       <motion.nav
