@@ -26,6 +26,7 @@ export default function RealtimeBookmarks({ serverBookmarks }: { serverBookmarks
     }, [serverBookmarks])
 
     useEffect(() => {
+        console.log('Setting up real-time subscription...')
         const channel = supabase
             .channel('realtime bookmarks')
             .on(
@@ -36,6 +37,7 @@ export default function RealtimeBookmarks({ serverBookmarks }: { serverBookmarks
                     table: 'bookmarks',
                 },
                 (payload) => {
+                    console.log('Real-time payload received:', payload)
                     if (payload.eventType === 'INSERT') {
                         setBookmarks((prev) => [...prev, payload.new as BookmarkItem])
                     } else if (payload.eventType === 'DELETE') {
@@ -43,9 +45,12 @@ export default function RealtimeBookmarks({ serverBookmarks }: { serverBookmarks
                     }
                 }
             )
-            .subscribe()
+            .subscribe((status) => {
+                console.log('Real-time subscription status:', status)
+            })
 
         return () => {
+            console.log('Cleaning up real-time subscription')
             supabase.removeChannel(channel)
         }
     }, [supabase])
