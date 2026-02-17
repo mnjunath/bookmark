@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/client'
 import { useEffect, useState } from 'react'
-import { Bookmark, Trash2, ExternalLink, Search, Filter } from 'lucide-react'
+import { Bookmark, Trash2, ExternalLink, Search } from 'lucide-react'
 import { deleteBookmark } from '@/app/actions'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -33,7 +33,6 @@ export default function RealtimeBookmarks({ serverBookmarks }: { serverBookmarks
         const subscribe = () => {
             console.log(`Setting up real-time subscription (Attempt ${retryCount + 1})...`)
 
-            // Use a unique channel for each subscription attempt
             const channel = supabase
                 .channel(`realtime-bookmarks-${Date.now()}`)
                 .on(
@@ -46,7 +45,13 @@ export default function RealtimeBookmarks({ serverBookmarks }: { serverBookmarks
                     (payload) => {
                         console.log('Real-time payload received:', payload)
                         if (payload.eventType === 'INSERT') {
-                            setBookmarks((prev) => [...prev, payload.new as BookmarkItem])
+                            const newBookmark = payload.new as BookmarkItem
+                            setBookmarks((prev) => {
+                                // Performance: Use a Set for faster lookup if list gets large, 
+                                // but for bookmarks, a simple some() is fine.
+                                if (prev.some(b => b.id === newBookmark.id)) return prev
+                                return [...prev, newBookmark]
+                            })
                         } else if (payload.eventType === 'DELETE') {
                             setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== payload.old.id))
                         }
@@ -64,7 +69,7 @@ export default function RealtimeBookmarks({ serverBookmarks }: { serverBookmarks
                             subscribe()
                         }, delay)
                     } else if (status === 'SUBSCRIBED') {
-                        retryCount = 0 // Reset on success
+                        retryCount = 0
                     }
                 })
 
@@ -97,7 +102,6 @@ export default function RealtimeBookmarks({ serverBookmarks }: { serverBookmarks
 
     return (
         <div className="space-y-6">
-            {/* Search and Filters */}
             <div className="space-y-4">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
